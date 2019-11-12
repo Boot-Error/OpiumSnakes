@@ -1,6 +1,6 @@
 package main
 
-func CurrentPos(turn Turn) (int32, int32) {
+func CurrentPos(turn Turn) (uint32, uint32) {
 
 	x := turn.You.Body[0].X
 	y := turn.You.Body[0].Y
@@ -8,7 +8,7 @@ func CurrentPos(turn Turn) (int32, int32) {
 	return x, y
 }
 
-func BoardDims(turn Turn) (int32, int32) {
+func BoardDims(turn Turn) (uint32, uint32) {
 
 	width := turn.Board.Width
 	height := turn.Board.Height
@@ -38,6 +38,7 @@ func AvoidEdge(turn Turn) string {
 	// right edge -> take top or bottom
 	// bottom edge -> take left or right
 
+	x, y := CurrentPos(turn)
 	w, h := BoardDims(turn)
 
 	if x == 0 {
@@ -49,6 +50,8 @@ func AvoidEdge(turn Turn) string {
 	} else if y == h-1 {
 		return "left"
 	}
+
+	return "up"
 }
 
 func GetCurrentHeading(turn Turn) string {
@@ -58,7 +61,7 @@ func GetCurrentHeading(turn Turn) string {
 
 	x1, y1 := CurrentPos(turn)
 
-	if turn.You.Body.length() == 1 {
+	if len(turn.You.Body) == 1 {
 		return ""
 	} else {
 
@@ -84,6 +87,8 @@ func GetCurrentHeading(turn Turn) string {
 			}
 		}
 	}
+
+	return ""
 }
 
 func MakeMove(turn Turn) Move {
