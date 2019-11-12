@@ -50,7 +50,7 @@ type Snake struct {
 	Id     string  `json:"id"`
 	Name   string  `json:"name"`
 	Health uint32  `json:"health"`
-	Body   []Point `json:"body1"`
+	Body   []Point `json:"body"`
 }
 
 type Board struct {
