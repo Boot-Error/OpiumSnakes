@@ -96,6 +96,8 @@ func MakeMove(turn Turn) Move {
 	var move string
 	if CheckIfEdge(turn) {
 		move = AvoidEdge(turn)
+	} else {
+		move = "up"
 	}
 
 	return Move{Move: move}
