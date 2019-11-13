@@ -39,4 +39,4 @@ curl -X POST -d '{
       }
     ]
   }
-}' -H 'Content-Type:applicaltion/json' http://localhost:5000/move
+}' -H 'Content-Type:applicaltion/json' http://sneksonplane.herokuapp.com/move

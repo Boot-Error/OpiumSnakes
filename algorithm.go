@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 func CurrentPos(turn Turn) (uint32, uint32) {
 
 	x := turn.You.Body[0].X
@@ -23,7 +27,7 @@ func CheckIfEdge(turn Turn) bool {
 
 	x, y := CurrentPos(turn)
 
-	if x > 0 && y > 0 && x < width && y < height {
+	if x > 0 && y > 0 && x < width-1 && y < height-1 {
 		return false
 	} else {
 		return true
@@ -41,17 +45,17 @@ func AvoidEdge(turn Turn) string {
 	x, y := CurrentPos(turn)
 	w, h := BoardDims(turn)
 
-	if x == 0 {
+	if y <= 0 {
 		return "right"
-	} else if y == 0 {
+	} else if x <= 0 {
 		return "up"
-	} else if x == w-1 {
-		return "down"
-	} else if y == h-1 {
+	} else if x >= w-1 {
 		return "left"
+	} else if y >= h-1 {
+		return "down"
 	}
 
-	return "up"
+	return ""
 }
 
 func GetCurrentHeading(turn Turn) string {
@@ -91,13 +95,40 @@ func GetCurrentHeading(turn Turn) string {
 	return ""
 }
 
+func GetFoodDirection(turn Turn) string {
+
+	if len(turn.Board.Food) == 0 {
+		return ""
+	}
+
+	fx := turn.Board.Food[0].X
+	fy := turn.Board.Food[0].Y
+
+	x, y := CurrentPos(turn)
+
+	if fx > x {
+		return "right"
+	} else if fx < x {
+		return "left"
+	} else {
+		if fy > y {
+			return "down"
+		} else {
+			return "up"
+		}
+	}
+}
+
 func MakeMove(turn Turn) Move {
 
 	var move string
 	if CheckIfEdge(turn) {
+
+		fmt.Println("At the Edge")
+
 		move = AvoidEdge(turn)
 	} else {
-		move = "up"
+		move = GetFoodDirection(turn)
 	}
 
 	return Move{Move: move}
