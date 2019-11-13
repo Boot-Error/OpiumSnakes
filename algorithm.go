@@ -34,7 +34,7 @@ func CheckIfEdge(turn Turn) bool {
 	}
 }
 
-func AvoidEdge(turn Turn) string {
+func AvoidEdgeAndCorners(turn Turn) string {
 
 	// if the snake is heading to an edge, avoid it
 	// top edge -> take left or right
@@ -45,14 +45,67 @@ func AvoidEdge(turn Turn) string {
 	x, y := CurrentPos(turn)
 	w, h := BoardDims(turn)
 
-	if y <= 0 {
-		return "right"
-	} else if x <= 0 {
+	heading := GetCurrentHeading(turn)
+
+	// check for corner cases
+	if x <= 0 && y <= 0 {
+		// top left corner
+		if heading == "up" {
+			return "right"
+		} else if heading == "left" {
+			return "down"
+		} else {
+			return "right"
+		}
+	}
+
+	if x <= 0 && y >= h-1 {
+		// bottom left corner
+		if heading == "down" {
+			return "left"
+		} else if heading == "left" {
+			return "up"
+		} else {
+			return "left"
+		}
+	}
+
+	if x >= w-1 && y <= 0 {
+		// top right corner
+		if heading == "right" {
+			return "down"
+		} else if heading == "up" {
+			return "left"
+		} else {
+			return "left"
+		}
+	}
+
+	if x >= w-1 && y >= h-1 {
+		// bottom right corner
+		if heading == "down" {
+			return "left"
+		} else if heading == "right" {
+			return "up"
+		} else {
+			return "left"
+		}
+	}
+
+	// check for edge cases
+	// the escape sequence is in clockwise
+	if x <= 0 && heading == "left" {
+		// left edge
 		return "up"
-	} else if x >= w-1 {
-		return "left"
-	} else if y >= h-1 {
+	} else if y <= 0 && heading == "up" {
+		// top edge
+		return "right"
+	} else if x >= w-1 && heading == "right" {
+		// right edge
 		return "down"
+	} else if y >= h-1 && heading == "down" {
+		// bottom edge
+		return "left"
 	}
 
 	return ""
@@ -65,9 +118,7 @@ func GetCurrentHeading(turn Turn) string {
 
 	x1, y1 := CurrentPos(turn)
 
-	if len(turn.You.Body) == 1 {
-		return ""
-	} else {
+	if len(turn.You.Body) > 1 {
 
 		x2 := turn.You.Body[1].X
 		y2 := turn.You.Body[1].Y
@@ -92,7 +143,7 @@ func GetCurrentHeading(turn Turn) string {
 		}
 	}
 
-	return ""
+	return "up"
 }
 
 func GetFoodDirection(turn Turn) string {
@@ -125,11 +176,12 @@ func MakeMove(turn Turn) Move {
 	if CheckIfEdge(turn) {
 
 		fmt.Println("At the Edge")
+		move = AvoidEdgeAndCorners(turn)
 
-		move = AvoidEdge(turn)
 	} else {
 		move = GetFoodDirection(turn)
 	}
 
+	fmt.Println("Chosen move: ", move)
 	return Move{Move: move}
 }
