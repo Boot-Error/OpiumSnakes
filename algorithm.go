@@ -127,9 +127,9 @@ func GetCurrentHeading(turn Turn) string {
 
 		if xdiff == 0 {
 			if ydiff > 0 {
-				return "up"
-			} else {
 				return "down"
+			} else {
+				return "up"
 			}
 		}
 
