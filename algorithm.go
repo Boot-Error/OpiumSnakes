@@ -22,12 +22,10 @@ func BoardDims(turn Turn) (uint32, uint32) {
 
 func CheckIfEdge(turn Turn) bool {
 
-	width := turn.Board.Width
-	height := turn.Board.Height
-
+	w, h := BoardDims(turn)
 	x, y := CurrentPos(turn)
 
-	if x > 0 && y > 0 && x < width-1 && y < height-1 {
+	if x > 0 && y > 0 && x < w-1 && y < h-1 {
 		return false
 	} else {
 		return true
@@ -108,6 +106,7 @@ func AvoidEdgeAndCorners(turn Turn) string {
 		return "left"
 	}
 
+	// we are in the middle
 	return ""
 }
 
@@ -136,9 +135,9 @@ func GetCurrentHeading(turn Turn) string {
 
 		if ydiff == 0 {
 			if xdiff > 0 {
-				return "left"
-			} else {
 				return "right"
+			} else {
+				return "left"
 			}
 		}
 	}
@@ -149,7 +148,7 @@ func GetCurrentHeading(turn Turn) string {
 func GetFoodDirection(turn Turn) string {
 
 	if len(turn.Board.Food) == 0 {
-		return ""
+		return GetCurrentHeading(turn)
 	}
 
 	fx := turn.Board.Food[0].X
@@ -182,6 +181,7 @@ func MakeMove(turn Turn) Move {
 		move = GetFoodDirection(turn)
 	}
 
+	fmt.Println("Heading: ", GetCurrentHeading(turn))
 	fmt.Println("Chosen move: ", move)
 	return Move{Move: move}
 }
