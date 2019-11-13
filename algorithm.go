@@ -12,6 +12,14 @@ func CurrentPos(turn Turn) (uint32, uint32) {
 	return x, y
 }
 
+func CurrentPosInt(turn Turn) (int32, int32) {
+
+	x := turn.You.Body[0].X
+	y := turn.You.Body[0].Y
+
+	return int32(x), int32(y)
+}
+
 func BoardDims(turn Turn) (uint32, uint32) {
 
 	width := turn.Board.Width
@@ -115,30 +123,27 @@ func GetCurrentHeading(turn Turn) string {
 	// if snake is of size 1, then default empty string
 	// need atleast size 2 to
 
-	x1, y1 := CurrentPos(turn)
+	x1, y1 := CurrentPosInt(turn)
 
-	if len(turn.You.Body) > 1 {
+	x2 := int32(turn.You.Body[1].X)
+	y2 := int32(turn.You.Body[1].Y)
 
-		x2 := turn.You.Body[1].X
-		y2 := turn.You.Body[1].Y
+	xdiff := x1 - x2
+	ydiff := y1 - y2
 
-		xdiff := x1 - x2
-		ydiff := y1 - y2
-
-		if xdiff == 0 {
-			if ydiff > 0 {
-				return "down"
-			} else {
-				return "up"
-			}
+	if xdiff == 0 {
+		if ydiff > 0 {
+			return "down"
+		} else {
+			return "up"
 		}
+	}
 
-		if ydiff == 0 {
-			if xdiff > 0 {
-				return "right"
-			} else {
-				return "left"
-			}
+	if ydiff == 0 {
+		if xdiff > 0 {
+			return "right"
+		} else {
+			return "left"
 		}
 	}
 
@@ -169,16 +174,45 @@ func GetFoodDirection(turn Turn) string {
 	}
 }
 
+func Opposite(move string) string {
+
+	switch move {
+	case "right":
+		return "left"
+	case "left":
+		return "right"
+	case "up":
+		return "down"
+	case "down":
+		return "up"
+	}
+
+	return move
+}
+
+func SelfCollisionAware(turn Turn, chosenMove string) string {
+
+	// if any heuristics give result without considering the self collision
+	// then it is averted here
+
+	curHeading := GetCurrentHeading(turn)
+
+	if chosenMove == Opposite(curHeading) {
+		return Opposite(chosenMove)
+	}
+
+	return chosenMove
+}
+
 func MakeMove(turn Turn) Move {
 
 	var move string
-	if CheckIfEdge(turn) {
-
+	move = AvoidEdgeAndCorners(turn)
+	if move != "" {
 		fmt.Println("At the Edge")
-		move = AvoidEdgeAndCorners(turn)
-
+		// move = AvoidEdgeAndCorners(turn)
 	} else {
-		move = GetFoodDirection(turn)
+		move = SelfCollisionAware(turn, GetFoodDirection(turn))
 	}
 
 	fmt.Println("Heading: ", GetCurrentHeading(turn))
