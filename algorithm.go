@@ -4,6 +4,49 @@ import (
 	"fmt"
 )
 
+func (p Point) Equal(p2 Point) bool {
+
+	if p.X == p2.X && p.Y == p2.Y {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (p Point) ToIndex(w uint32) uint32 {
+	return w*p.X + p.Y
+}
+
+func MakeBoard(turn Turn) []uint8 {
+	// An Internal representation of the game board
+	// useful for checking the content on board
+
+	// AIR := 0
+	// MYSNAKE := 1
+	// FOOD := 2
+	// OTHERSNAKE := 3
+
+	w, h := BoardDims(turn)
+
+	board := make([]uint8, w*h)
+
+	for _, p := range turn.Board.Food {
+		board[p.ToIndex(w)] = 0
+	}
+
+	for _, s := range turn.Board.Snakes {
+		for _, p := range s.Body {
+			board[p.ToIndex(w)] = 3
+		}
+	}
+
+	for _, p := range turn.You.Body {
+		board[p.ToIndex(w)] = 1
+	}
+
+	return board
+}
+
 func CurrentPos(turn Turn) (uint32, uint32) {
 
 	x := turn.You.Body[0].X
@@ -26,6 +69,34 @@ func BoardDims(turn Turn) (uint32, uint32) {
 	height := turn.Board.Height
 
 	return width, height
+}
+
+func GetNeighbours(turn Turn, point Point) map[string]Point {
+
+	x := point.X
+	y := point.Y
+
+	w, h := BoardDims(turn)
+
+	neighbours := make(map[string]Point)
+
+	if x > 0 {
+		neighbours["left"] = Point{X: x - 1, Y: y}
+	}
+
+	if x < w-1 {
+		neighbours["right"] = Point{X: x + 1, Y: y}
+	}
+
+	if y > 0 {
+		neighbours["up"] = Point{X: x, Y: y - 1}
+	}
+
+	if y < h-1 {
+		neighbours["down"] = Point{X: x, Y: y + 1}
+	}
+
+	return neighbours
 }
 
 func CheckIfEdge(turn Turn) bool {
@@ -195,11 +266,27 @@ func SelfCollisionAware(turn Turn, chosenMove string) string {
 	// if any heuristics give result without considering the self collision
 	// then it is averted here
 
-	curHeading := GetCurrentHeading(turn)
+	board := MakeBoard(turn)
+	w, _ := BoardDims(turn)
 
-	if chosenMove == Opposite(curHeading) {
-		return Opposite(chosenMove)
+	nb := GetNeighbours(turn, turn.You.Body[0])
+	nextTile := nb[chosenMove]
+
+	if board[nextTile.ToIndex(w)] != 0 {
+		fmt.Println("Chosen move is not AIR")
+
+		for k, v := range nb {
+			if board[v.ToIndex(w)] == 0 {
+				return k
+			}
+		}
 	}
+
+	// curHeading := GetCurrentHeading(turn)
+	//
+	// if chosenMove == Opposite(curHeading) {
+	// 	return Opposite(chosenMove)
+	// }
 
 	return chosenMove
 }
