@@ -227,22 +227,35 @@ func GetFoodDirection(turn Turn) string {
 		return GetCurrentHeading(turn)
 	}
 
-	fx := turn.Board.Food[0].X
-	fy := turn.Board.Food[0].Y
+	w, h := BoardDims(turn)
 
-	x, y := CurrentPos(turn)
+	path := make([]string, w*h)
+	for _, f := range turn.Board.Food {
+		_path := AStar(turn, turn.You.Body[0], f)
 
-	if fx > x {
-		return "right"
-	} else if fx < x {
-		return "left"
-	} else {
-		if fy > y {
-			return "down"
-		} else {
-			return "up"
+		if len(_path) < len(path) {
+			path = _path
 		}
 	}
+
+	return path[0]
+
+	// fx := path[0].X
+	// fy := path[0].Y
+	//
+	// x, y := CurrentPos(turn)
+	//
+	// if fx > x {
+	// 	return "right"
+	// } else if fx < x {
+	// 	return "left"
+	// } else {
+	// 	if fy > y {
+	// 		return "down"
+	// 	} else {
+	// 		return "up"
+	// 	}
+	// }
 }
 
 func Opposite(move string) string {
@@ -261,7 +274,7 @@ func Opposite(move string) string {
 	return move
 }
 
-func SelfCollisionAware(turn Turn, chosenMove string) string {
+func CollisionAware(turn Turn, chosenMove string) string {
 
 	// if any heuristics give result without considering the self collision
 	// then it is averted here
@@ -282,24 +295,18 @@ func SelfCollisionAware(turn Turn, chosenMove string) string {
 		}
 	}
 
-	// curHeading := GetCurrentHeading(turn)
-	//
-	// if chosenMove == Opposite(curHeading) {
-	// 	return Opposite(chosenMove)
-	// }
-
 	return chosenMove
 }
 
 func MakeMove(turn Turn) Move {
 
 	var move string
-	move = AvoidEdgeAndCorners(turn)
+	// move = AvoidEdgeAndCorners(turn)
 	if move != "" {
 		fmt.Println("At the Edge")
 		// move = AvoidEdgeAndCorners(turn)
 	} else {
-		move = SelfCollisionAware(turn, GetFoodDirection(turn))
+		move = CollisionAware(turn, GetFoodDirection(turn))
 	}
 
 	fmt.Println("Heading: ", GetCurrentHeading(turn))

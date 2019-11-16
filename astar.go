@@ -52,8 +52,18 @@ func (pq *PriorityQueue) update(item *Item, point Point, priority int) {
 	heap.Fix(pq, item.Index)
 }
 
-func PointToItem(point Point, priority int) Item {
-	return Item{
+func (pq PriorityQueue) membership(point Point) *Item {
+
+	for _, i := range pq {
+		if point.X == i.Point.X && point.Y == i.Point.Y {
+			return i
+		}
+	}
+	return nil
+}
+
+func PointToItem(point Point, priority int) *Item {
+	return &Item{
 		Point:    point,
 		Priority: priority,
 		Index:    0,
@@ -65,16 +75,28 @@ func (p Point) ManhattanDistance(other Point) int {
 	return int(math.Abs(float64(p.X-other.X)) + math.Abs(float64(p.Y-other.Y)))
 }
 
-func CostFunction(start Point, current Point, goal Point) int {
+type GridItem struct {
+	TileType uint8
+	Gcost    int
+	Hcost    int
+}
 
-	G := start.ManhattanDistance(current)
-	H := current.ManhattanDistance(goal)
+func MakeGrid(board []uint8) []GridItem {
 
-	return G + H
+	grid := make([]GridItem, len(board))
+	for _, i := range board {
+		grid[i] = GridItem{
+			TileType: board[i],
+			Gcost:    0,
+			Hcost:    0,
+		}
+	}
+
+	return grid
 }
 
 // General A* Implementation
-func AStar(board []Point, start Point, goal Point) []Point {
+func AStar(turn Turn, start Point, goal Point) []string {
 
 	// OPEN = priority queue containing START
 	// CLOSED = empty set
@@ -96,25 +118,44 @@ func AStar(board []Point, start Point, goal Point) []Point {
 	// reconstruct reverse path from goal to start
 	// by following parent pointers
 
-	var path []Point
+	var path []string
 
-	frontier := make(PriorityQueue, len(board))
-	frontier.Push(PointToItem(start, 0))
+	w, h := BoardDims(turn)
 
-	for len(frontier) > 0 {
+	board := MakeBoard(turn)
+	grid := MakeGrid(board)
 
-		current := frontier.Pop().(*Item)
+	OPEN := make(PriorityQueue, len(board))
+	OPEN.Push(PointToItem(start, 0))
+
+	grid[start.ToIndex(w)].Hcost = start.ManhattanDistance(goal)
+
+	CLOSED := make([]bool, w*h)
+
+	for len(OPEN) > 0 {
+
+		current := OPEN.Pop().(*Item)
 
 		if current.Point.Equal(goal) {
 			return path
 		}
 
-		// for k, v := range GetNeighbours(current.Point) {
-		//
-		// 	fmt.Println(k, v)
-		// }
+		CLOSED[current.Point.ToIndex(w)] = true
+
+		for d, v := range GetNeighbours(turn, current.Point) {
+
+			// Gcost := grid[current.Point.ToIndex(w)].Gcost + 1
+			Hcost := v.ManhattanDistance(goal)
+
+			if !CLOSED[v.ToIndex(w)] {
+				OPEN.Push(PointToItem(v, Hcost))
+
+				CLOSED[v.ToIndex(w)] = true
+				path = append(path, d)
+			}
+		}
 	}
 
 	fmt.Println("A*")
-	return []Point{Point{X: 2, Y: 3}}
+	return path
 }
