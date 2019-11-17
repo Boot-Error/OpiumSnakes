@@ -8,6 +8,6 @@ A bot built to play in [BattleSnake](https://play.battlesnake.com).
 ## Features
 
 - [x] Use A\* to fetch Food 
-- [] Use Vonoroi Heuristics fo
-- [] Build Attacking Strategies
+- [ ] Use Vonoroi Heuristics fo
+- [ ] Build Attacking Strategies
 
